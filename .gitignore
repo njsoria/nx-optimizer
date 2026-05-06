@@ -31,6 +31,11 @@ src/modules/logger.txt
 src/dist/*
 !src/dist/*.zip
 .DS_Store
+# nx-optimizer Extract button output (local only)
+src/Extracted Files/
+# Save backups created next to run.py when using backup from src/
+src/backup/
+
 /src/build
 venv
 src/.venv/
