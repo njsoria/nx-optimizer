@@ -1,21 +1,44 @@
-Note you need dependencies namely:
+Official builds use Python 3.11.x (see .github/workflows/build-multiplatform.yml). From this src/ directory:
 
-pip install requests Pillow patool tk
+1) Install dependencies (recommended: use a venv)
 
-Open a terminal set the current path to the folder DIR. Then write
+   python -m venv .venv
+   source .venv/bin/activate     # macOS / Linux
+   python dependencies.py
 
-For Windows
+   dependencies.py installs pyinstaller, ttkbootstrap fork, tkinterdnd2, and the rest of the stack.
 
-python -m PyInstaller run.py --onefile --name TOTK_MOD_Manager --add-data "GUI;GUI" --add-data "json.data;json.data"
+2) Build (macOS): matches CI — produces a zip under dist/ containing NX Optimizer.app
 
-For Linux
+   python compile_onedir.py
 
-pyinstaller run.py --onefile --name TOTK_Mod_Manager --add-data "GUI:GUI" --hidden-import PIL --hidden-import PIL._tkinter_finder --hidden-import PIL._tkinter
+   If GUI/LOGO.icns is missing, the build still runs; an icon is only passed to PyInstaller when that file exists.
 
-For MacOS
+3) Run without packaging (debug)
 
-pyinstaller run.py --onefile --name TOTK_Mod_Manager --add-data "GUI:GUI" --add-data "json.data:json.data" --windowed
+   python run.py
 
-For Linux users aiming to generate Windows executable files or Windows users aiming to create Linux AppImage files, you can utilize the Docker image available for building purposes.
+---
 
-Please refer to the following repository for guidance: https://github.com/batonogov/docker-pyinstaller
+Legacy one-liner (not maintained; prefer compile_onedir.py above)
+
+macOS example:
+
+   pyinstaller run.py --onefile --name NX_Optimizer --add-data "GUI:GUI" --add-data "Localization:Localization" --add-data "PatchInfo:PatchInfo" --windowed
+
+---
+
+Ryujinx on macOS (short)
+
+- Mods are installed under the Ryujinx data directory (not your game ROM folder): mods/contents/<title-id>/...
+- Default data path: ~/Library/Application Support/Ryujinx/
+- Portable Ryujinx: a "portable" folder next to the Ryujinx binary. On macOS you can set the path to the real binary in TOTKOptimizer.ini, e.g.
+  [Paths]
+  RyujinxPath = /path/to/Ryujinx.app/Contents/MacOS/Ryujinx
+  Settings and logs for this app: ~/.totk-mods/TOTKOptimizer.ini and ~/.totk-mods/logger.log
+
+---
+
+Docker cross-builds (Windows / Linux from other hosts):
+
+https://github.com/batonogov/docker-pyinstaller
