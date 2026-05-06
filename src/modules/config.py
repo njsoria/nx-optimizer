@@ -4,6 +4,73 @@ import os, json
 
 from modules.FrontEnd.FrontEndMode import NxMode
 
+def _patch_dict_for_patch_key(Manager, patch_key):
+    """Options are split across UltraCam/Shaders/etc.; look up patch metadata by patch id."""
+    for patch_info in Manager.UltracamPatchJson.values():
+        if patch_key in patch_info:
+            return patch_info[patch_key]
+    return None
+
+
+def _preset_option_to_choice_key(Manager, option_key: str):
+    """Map preset JSON keys from older presets to current Options.json ids (match UserChoices casing)."""
+    lk = option_key.lower().strip().replace(" ", "")
+    if lk == "shadowresolution":
+        lk = "shadows"
+    elif lk == "resolution":
+        lk = "docked"
+    elif lk == "aspectratio":
+        lk = "aspectratiov2"
+    elif lk == "handheldresolution":
+        lk = "handheld"
+    for k in Manager.UserChoices:
+        if k.lower() == lk:
+            return k
+    return None
+
+
+def _preset_apply_choice(Manager, uc_key, patch_dict, stored_value):
+
+    patch_class = patch_dict["Class"]
+    patch_default = patch_dict["Default"]
+
+    if patch_class == "dropdown":
+        patch_Names = patch_dict["Name_Values"]
+        Manager.UserChoices[uc_key].set(patch_Names[int(stored_value)])
+    elif patch_class == "scale":
+        Manager.maincanvas.itemconfig(patch_dict["Name"], text=stored_value)
+        Manager.UserChoices[uc_key].set(stored_value)
+    else:
+        v = stored_value
+        if patch_class == "bool":
+            if v is True:
+                v = "On"
+            if v is False:
+                v = "Off"
+        Manager.UserChoices[uc_key].set(v)
+
+
+def _preset_apply_choice_default(Manager, uc_key, patch_dict):
+
+    patch_class = patch_dict["Class"]
+    patch_default = patch_dict["Default"]
+
+    if patch_class == "dropdown":
+        patch_names = patch_dict["Name_Values"]
+        Manager.UserChoices[uc_key].set(patch_names[patch_default])
+    elif patch_class == "scale":
+        Manager.maincanvas.itemconfig(patch_dict["Name"], text=patch_default)
+        Manager.UserChoices[uc_key].set(patch_default)
+    else:
+        d = patch_default
+        if patch_class == "bool":
+            if d is True:
+                d = "On"
+            elif d is False:
+                d = "Off"
+        Manager.UserChoices[uc_key].set(d)
+
+
 # fmt: off
 def apply_preset(Manager, preset_options: dict):
 
@@ -13,64 +80,31 @@ def apply_preset(Manager, preset_options: dict):
 
     Manager: mgr = Manager
 
-    # Manager.fetch_var(Manager.ui_var, preset_options, "UI")
-    # Manager.fetch_var(Manager.fp_var, preset_options, "First Person")
-    # Manager.fetch_var(Manager.selected_settings, preset_options, "Settings") # set Legacy settings.
+    if "emuscale" in preset_options:
+        Manager._EmulatorScale.set(preset_options["emuscale"])
 
-    for i, (key, value) in enumerate(Manager.UltracamPatchJson.items()):        
-        patch_info = value
+    for option_key, option_value in preset_options.items():
+        if option_key in Manager.selected_options:
+            Manager.selected_options[option_key].set(option_value)
 
-        if "emuscale" in preset_options:
-            Manager._EmulatorScale.set(preset_options["emuscale"])
+    selected_preset = Manager.selected_preset.get()
 
-        for option_key, option_value in preset_options.items():
-            if option_key in Manager.selected_options:
-                Manager.selected_options[option_key].set(option_value)
-            else:
+    if selected_preset.lower() == "default":
+        for uc_key in Manager.UserChoices:
+            patch_dict = _patch_dict_for_patch_key(Manager, uc_key)
+            if patch_dict is None:
                 continue
+            _preset_apply_choice_default(Manager, uc_key, patch_dict)
 
-        selected_preset = Manager.selected_preset.get()
-
-        if selected_preset.lower() == "default":
-            for option_key in Manager.UserChoices:
-                try:
-                    patch_dict = patch_info[option_key.lower()]
-                except KeyError:
-                    continue
-                patch_class = patch_dict["Class"]
-                patch_default = patch_dict["Default"]
-
-                if patch_class == "dropdown":
-                    patch_names = patch_dict["Name_Values"]
-                    Manager.UserChoices[option_key.lower()].set(patch_names[patch_default])
-                elif patch_class == "scale":
-                    Manager.maincanvas.itemconfig(patch_dict["Name"], text=patch_default)
-                    Manager.UserChoices[option_key.lower()].set(patch_default)
-                else:
-                    if patch_class == "bool":
-                        if patch_default is True: patch_default = "On"
-                        if patch_default is False: patch_default = "Off"
-                    Manager.UserChoices[option_key.lower()].set(patch_default)
-
+    if selected_preset.lower() != "default":
         for option_key, option_value in preset_options.items():
-            if option_key.lower() in Manager.UserChoices:
-                patch_dict = patch_info[option_key.lower()]
-                patch_class = patch_dict["Class"]
-                patch_default = patch_dict["Default"]
-
-                if patch_class == "dropdown":
-                    patch_Names = patch_dict["Name_Values"]
-                    Manager.UserChoices[option_key.lower()].set(patch_Names[int(option_value)])
-                elif patch_class == "scale":
-                    Manager.maincanvas.itemconfig(patch_dict["Name"], text=option_value)
-                    Manager.UserChoices[option_key.lower()].set(option_value)
-                else:
-                    if patch_class == "bool":
-                        if option_value is True: option_value = "On"
-                        if option_value is False: option_value = "Off"
-                    Manager.UserChoices[option_key.lower()].set(option_value)
-            else:
+            uc_key = _preset_option_to_choice_key(Manager, option_key)
+            if uc_key is None:
                 continue
+            patch_dict = _patch_dict_for_patch_key(Manager, uc_key)
+            if patch_dict is None:
+                continue
+            _preset_apply_choice(Manager, uc_key, patch_dict, option_value)
 
 def setGameConfig(Manager, config):
     # UltraCam Beyond new patches.
