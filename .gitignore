@@ -27,7 +27,10 @@ src/\!\!\!TOTK Optimizer/exefs/subsdk3
 src/modules/logger.txt
 *.spec
 *.txt
-/src/dist
+# Release zips under src/dist/ are tracked; ignore PyInstaller leftovers
+src/dist/*
+!src/dist/*.zip
+.DS_Store
 /src/build
 venv
 src/.venv/
