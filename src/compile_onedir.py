@@ -98,14 +98,15 @@ if __name__ == "__main__":
             "GUI:GUI",
             "--add-data",
             "PatchInfo:PatchInfo",
-            "--icon",
-            "GUI/LOGO.icns",
             "--hidden-import=PIL",
             "--hidden-import=PIL._tkinter_finder",
             "--hidden-import=ttkbootstrap",
             "--collect-all",
-            "tkinterdnd2"
+            "tkinterdnd2",
         ]
+        mac_icon = "GUI/LOGO.icns"
+        if os.path.isfile(mac_icon):
+            command.extend(["--icon", mac_icon])
         subprocess.run(command, check=True)
 
         processor = "Silicon"

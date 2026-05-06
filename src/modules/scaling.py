@@ -7,10 +7,12 @@ import os
 CONFIG_FILE_LOCAL_OPTIMIZER = "TOTKOptimizer.ini"
 
 if platform.system() == "Darwin":
-    localconfig = os.path.join(macos_path, CONFIG_FILE_LOCAL_OPTIMIZER)
+    _optimizer_ini_path = os.path.join(macos_path, CONFIG_FILE_LOCAL_OPTIMIZER)
+else:
+    _optimizer_ini_path = CONFIG_FILE_LOCAL_OPTIMIZER
 
 config = configparser.ConfigParser()
-config.read(CONFIG_FILE_LOCAL_OPTIMIZER)
+config.read(_optimizer_ini_path)
 w_scale = config.get("Settings", "scale", fallback="On")
 
 

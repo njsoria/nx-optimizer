@@ -77,12 +77,12 @@ class FileManager:
     def read_configpath(filemgr):
         if NxMode.isLegacy():
             config = configparser.ConfigParser()
-            config.read(CONFIG_FILE_LOCAL_OPTIMIZER, encoding="utf-8")
+            config.read(localconfig, encoding="utf-8")
             Legacy_path = config.get('Paths', 'Legacypath', fallback="Appdata")
             return Legacy_path
         if NxMode.isRyujinx():
             config = configparser.ConfigParser()
-            config.read(CONFIG_FILE_LOCAL_OPTIMIZER, encoding="utf-8")
+            config.read(localconfig, encoding="utf-8")
             ryujinx_path = config.get('Paths', 'ryujinxpath', fallback="Appdata")
             return ryujinx_path
 
