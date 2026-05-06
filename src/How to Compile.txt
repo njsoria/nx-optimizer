@@ -1,5 +1,9 @@
 Official builds use Python 3.11.x (see .github/workflows/build-multiplatform.yml). From this src/ directory:
 
+macOS note (from upstream maintainer): There is limited Mac-specific testing because they do not have a Mac locally; PyInstaller/Git-built bundles can misbehave. The recommended workaround is to clone or fork the repo, run dependencies.py from this folder, then run run.py — the app behaves as intended when run from source. If something still fails after that, treating it as a separate bug helps.
+
+---
+
 1) Install dependencies (recommended: use a venv)
 
    python -m venv .venv
