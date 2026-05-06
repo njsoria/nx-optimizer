@@ -521,8 +521,7 @@ class FileManager:
 
                 log.warning(f"Creating {modName} config File Path... {ini_file_path}\n")
 
-                ini_file_directory = os.path.dirname(ini_file_path)
-                os.makedirs(ini_file_directory, exist_ok=True)
+                os.makedirs(ini_file_path, exist_ok=True)
 
                 log.info(f"Opening {modName} config file...")
                 
